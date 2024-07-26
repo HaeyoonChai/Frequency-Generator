@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frequency Generator</title>
     <style>
-        /* 기존 스타일 유지 */
         body {
             font-family: 'Arial', sans-serif;
             display: flex;
@@ -15,7 +14,7 @@
             height: 100vh;
             margin: 0;
             background: linear-gradient(to right, #ff7e5f, #feb47b);
-            padding-bottom: 100px; /* Ensure space for the fixed ad */
+            padding-bottom: 100px;
         }
         .container {
             background: #ffffff;
@@ -102,7 +101,6 @@
         .warning button:hover {
             background-color: #d32f2f;
         }
-        /* Ad Container */
         .ad-container {
             position: fixed;
             bottom: 0;
@@ -112,14 +110,6 @@
             background: #ffffff;
             padding: 10px 0;
             box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .age-input-section {
-            display: none;
-            margin: 20px 0;
-        }
-        .age-input-section input {
-            width: calc(100% - 24px);
-            margin: 10px auto;
         }
     </style>
 </head>
@@ -148,14 +138,9 @@
             <option value="human">Human</option>
         </select>
 
-        <div class="age-input-section" id="ageSection">
-            <label for="age">Enter Your Age:</label>
-            <input type="number" id="age" min="1" max="100">
-        </div>
-
         <label for="frequency">Select Frequency:</label>
         <select id="frequency">
-            <!-- Default frequencies will be updated based on selected target -->
+            <!-- Frequencies will be populated based on selected target -->
         </select>
 
         <button id="playButton">Play Frequency</button>
@@ -164,6 +149,7 @@
         <div class="info" id="info"></div>
         <div class="warning" id="warning">
             <p>⚠️ High frequencies may be harmful or irritating to humans. Use caution!</p>
+            <button id="confirmButton">Continue</button>
         </div>
     </div>
 
@@ -186,9 +172,8 @@
         const playButton = document.getElementById('playButton');
         const stopButton = document.getElementById('stopButton');
         const infoDiv = document.getElementById('info');
-        const ageSection = document.getElementById('ageSection');
-        const ageInput = document.getElementById('age');
         const warningDiv = document.getElementById('warning');
+        const confirmButton = document.getElementById('confirmButton');
 
         let audioContext;
         let oscillator;
@@ -198,51 +183,39 @@
             fly: [20000, 25000, 30000],
             mosquito: [25000, 30000, 35000],
             rat: [30000, 35000, 40000],
-            human: [15000, 20000, 25000] // Human-specific frequencies
-        };
-
-        // Frequencies that may be irritating or harmful to humans by age range
-        const ageFrequencyThresholds = {
-            '1-10': [10000, 15000, 20000],
-            '11-20': [15000, 20000, 25000],
-            '21-30': [20000, 25000, 30000],
-            '31-40': [25000, 30000, 35000],
-            '41-50': [30000, 35000, 40000],
-            '51-60': [35000, 40000, 45000],
-            '61-100': [40000, 45000, 50000]
-        };
-
-        // Language translations
-        const translations = {
-            en: {
-                title: 'Frequency Generator',
-                selectTarget: 'Select Target:',
-                selectFrequency: 'Select Frequency:',
-                playButton: 'Play Frequency',
-                stopButton: 'Stop Frequency',
-                warningText: '⚠️ High frequencies may be harmful or irritating to humans. Use caution!',
-                introText: 'Select your preferred language to continue. This tool allows you to generate different frequencies for various targets.'
-            },
-            ko: {
-                title: '주파수 생성기',
-                selectTarget: '대상 선택:',
-                selectFrequency: '주파수 선택:',
-                playButton: '주파수 재생',
-                stopButton: '주파수 정지',
-                warningText: '⚠️ 높은 주파수는 인간에게 해롭거나 자극적일 수 있습니다. 주의하세요!',
-                introText: '선호하는 언어를 선택하여 계속 진행하세요. 이 도구를 사용하면 다양한 대상에 대해 다른 주파수를 생성할 수 있습니다.'
-            }
+            human: [10000, 12000, 14000, 15000] // Frequencies for humans, 10kHz to 15kHz
         };
 
         function updateLanguage() {
             const lang = languageSelect.value;
-            document.getElementById('mainTitle').innerText = translations[lang].title;
-            targetSelect.previousElementSibling.innerText = translations[lang].selectTarget;
-            frequencySelect.previousElementSibling.innerText = translations[lang].selectFrequency;
-            playButton.innerText = translations[lang].playButton;
-            stopButton.innerText = translations[lang].stopButton;
-            document.getElementById('introText').innerText = translations[lang].introText;
-            warningDiv.querySelector('p').innerText = translations[lang].warningText;
+            const translations = {
+                en: {
+                    title: 'Frequency Generator',
+                    selectTarget: 'Select Target:',
+                    selectFrequency: 'Select Frequency:',
+                    playButton: 'Play Frequency',
+                    stopButton: 'Stop Frequency',
+                    introText: 'Choose your target and select a frequency.',
+                    warningText: '⚠️ High frequencies may be harmful or irritating to humans. Use caution!'
+                },
+                ko: {
+                    title: '주파수 생성기',
+                    selectTarget: '대상 선택:',
+                    selectFrequency: '주파수 선택:',
+                    playButton: '주파수 재생',
+                    stopButton: '주파수 정지',
+                    introText: '대상을 선택하고 주파수를 선택하세요.',
+                    warningText: '⚠️ 고주파는 사람에게 해롭거나 자극적일 수 있습니다. 주의하세요!'
+                }
+            };
+            const translation = translations[lang];
+            document.getElementById('mainTitle').innerText = translation.title;
+            targetSelect.previousElementSibling.innerText = translation.selectTarget;
+            frequencySelect.previousElementSibling.innerText = translation.selectFrequency;
+            playButton.innerText = translation.playButton;
+            stopButton.innerText = translation.stopButton;
+            document.getElementById('introText').innerText = translation.introText;
+            warningDiv.querySelector('p').innerText = translation.warningText;
         }
 
         function showMainContent() {
@@ -250,26 +223,13 @@
             mainContent.style.display = 'block';
         }
 
-        function getAgeRange(age) {
-            if (age >= 1 && age <= 10) return '1-10';
-            if (age >= 11 && age <= 20) return '11-20';
-            if (age >= 21 && age <= 30) return '21-30';
-            if (age >= 31 && age <= 40) return '31-40';
-            if (age >= 41 && age <= 50) return '41-50';
-            if (age >= 51 && age <= 60) return '51-60';
-            return '61-100';
-        }
-
         function updateOptions() {
             const target = targetSelect.value;
             let frequencies = targetFrequencies[target];
 
             if (target === 'human') {
-                const age = parseInt(ageInput.value);
-                if (!isNaN(age) && age >= 1 && age <= 100) {
-                    const ageRange = getAgeRange(age);
-                    frequencies = frequencies.filter(freq => ageFrequencyThresholds[ageRange].includes(freq));
-                }
+                // For human, show frequencies in range 10kHz to 15kHz
+                frequencies = targetFrequencies['human'];
             }
 
             frequencySelect.innerHTML = frequencies.map(freq => `<option value="${freq}">${freq / 1000} kHz</option>`).join('');
@@ -283,12 +243,8 @@
         }
 
         function checkForHumanUnpleasantFrequency(frequency) {
-            const age = parseInt(ageInput.value);
-            if (!isNaN(age) && age >= 1 && age <= 100) {
-                const ageRange = getAgeRange(age);
-                return ageFrequencyThresholds[ageRange].includes(frequency);
-            }
-            return false;
+            // For human, just check if frequency is within the range, no need for age-based checks
+            return frequency < 10000 || frequency > 15000;
         }
 
         languageButton.addEventListener('click', () => {
@@ -297,29 +253,22 @@
         });
 
         targetSelect.addEventListener('change', () => {
-            if (targetSelect.value === 'human') {
-                ageSection.style.display = 'block';
-            } else {
-                ageSection.style.display = 'none';
-            }
             updateOptions();
-        });
-
-        ageInput.addEventListener('input', () => {
-            if (targetSelect.value === 'human') {
-                updateOptions();
-            }
         });
 
         playButton.addEventListener('click', () => {
             const frequency = parseInt(frequencySelect.value);
             if (targetSelect.value === 'human' && checkForHumanUnpleasantFrequency(frequency)) {
-                if (window.confirm("⚠️ High frequencies may be harmful or irritating to humans. Do you want to continue?")) {
-                    playFrequency(frequency); // Play frequency if confirmed
-                }
+                warningDiv.style.display = 'block';
             } else {
-                playFrequency(frequency); // Play frequency immediately if not human or frequency is not unpleasant
+                playFrequency(frequency);
             }
+        });
+
+        confirmButton.addEventListener('click', () => {
+            const frequency = parseInt(frequencySelect.value);
+            playFrequency(frequency);
+            warningDiv.style.display = 'none';
         });
 
         stopButton.addEventListener('click', () => {
