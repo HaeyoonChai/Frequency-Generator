@@ -14,11 +14,17 @@
             height: 100vh;
             margin: 0;
             background: linear-gradient(to right, #ff7e5f, #feb47b);
+            overflow: hidden;
         }
         .ad-container {
             width: 100%;
             text-align: center;
-            margin-bottom: 20px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            background: #ffffff;
+            padding: 10px 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
         }
         .container {
             background: #ffffff;
@@ -109,15 +115,6 @@
     </style>
 </head>
 <body>
-    <!-- 카카오 에드핏 광고 -->
-    <div class="ad-container">
-        <ins class="kakao_ad_area" style="display:block; text-align:center;"
-            data-ad-unit="DAN-DDNCplMPGYeG5XN9"
-            data-ad-width="728"
-            data-ad-height="90"></ins>
-        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
-    </div>
-
     <div class="container language-selection" id="languageSelection">
         <h1 id="selectLanguageTitle">Frequency Generator</h1>
         <h2 id="selectLanguageSubtitle">Choose your language to start:</h2>
@@ -157,6 +154,15 @@
         <button id="cancelButton">Cancel</button>
     </div>
     
+    <!-- 카카오 에드핏 광고 -->
+    <div class="ad-container">
+        <ins class="kakao_ad_area" style="display:block; text-align:center;"
+            data-ad-unit="DAN-DDNCplMPGYeG5XN9"
+            data-ad-width="728"
+            data-ad-height="90"></ins>
+        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+    </div>
+
     <script>
         const languageSelect = document.getElementById('language');
         const languageButton = document.getElementById('languageButton');
