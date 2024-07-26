@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frequency Generator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+        }
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            transition: transform 0.3s ease-in-out;
+        }
+        .container:hover {
+            transform: scale(1.02);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        h2 {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 400;
+        }
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-size: 18px;
+            color: #555;
+        }
+        select, button {
+            padding: 12px;
+            font-size: 16px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        select:focus, button:focus {
+            outline: none;
+            border-color: #007BFF;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        select {
+            width: calc(100% - 24px);
+            margin: 0 auto;
+        }
+        button {
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .info strong {
+            color: #333;
+        }
+        .language-selection, .main-content {
+            display: none;
+        }
+        .language-selection {
+            display: block;
+        }
+        .warning {
+            display: none;
+        }
+        .warning p {
+            font-size: 16px;
+            color: #f44336;
+        }
+        .warning button {
+            background-color: #f44336;
+        }
+        .warning button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container language-selection" id="languageSelection">
+        <h1 id="selectLanguageTitle">Frequency Generator</h1>
+        <h2 id="selectLanguageSubtitle">Choose your language to start:</h2>
+        <label for="language" id="languageLabel">Select Language:</label>
+        <select id="language">
+            <option value="en">English</option>
+            <option value="ko">한국어</option>
+        </select>
+        <button id="languageButton">Continue</button>
+    </div>
+
+    <div class="container main-content" id="mainContent">
+        <h1 id="mainTitle">Frequency Generator</h1>
+        
+        <label for="target" id="targetLabel">Select Target:</label>
+        <select id="target">
+            <option value="fly">Fly</option>
+            <option value="mosquito">Mosquito</option>
+            <option value="rat">Rat</option>
+            <option value="human">Human</option>
+        </select>
+
+        <label for="frequency" id="frequencyLabel">Select Frequency:</label>
+        <select id="frequency">
+            <!-- Default frequencies will be updated based on selected target -->
+        </select>
+
+        <button id="playButton">Play Frequency</button>
+        <button id="stopButton">Stop Frequency</button>
+        
+        <div class="info" id="info"></div>
+    </div>
+    
+    <div class="warning" id="warning">
+        <p id="warningText">⚠️ High frequencies may be harmful or irritating to humans. Use caution!</p>
+        <button id="confirmButton">OK</button>
+        <button id="cancelButton">Cancel</button>
+    </div>
+    
+    <script>
+        const languageSelect = document.getElementById('language');
+        const languageButton = document.getElementById('languageButton');
+        const languageSelection = document.getElementById('languageSelection');
+        const mainContent = document.getElementById('mainContent');
+        const targetSelect = document.getElementById('target');
+        const frequencySelect = document.getElementById('frequency');
+        const playButton = document.getElementById('playButton');
+        const stopButton = document.getElementById('stopButton');
+        const infoDiv = document.getElementById('info');
+        const warningDiv = document.getElementById('warning');
+        const confirmButton = document.getElementById('confirmButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const warningText = document.getElementById('warningText');
+
+        let audioContext;
+        let oscillator;
+
+        // Frequencies for different targets
+        const targetFrequencies = {
+            fly: [20000, 25000, 30000],
+            mosquito: [25000, 30000, 35000],
+            rat: [30000, 35000, 40000],
+            human: [15000, 20000, 25000] // Human-specific frequencies
+        };
+
+        // Frequencies that may be irritating or harmful to humans
+        const humanUnpleasantFrequencies = [15000, 20000, 25000];
+
+        // Language translations
+        const translations = {
+            en: {
+                title: 'Frequency Generator',
+                subtitle: 'Choose your language to start:',
+                selectTarget: 'Select Target:',
+                selectFrequency: 'Select Frequency:',
+                playButton: 'Play Frequency',
+                stopButton: 'Stop Frequency',
+                warningText: '⚠️ High frequencies may be harmful or irritating to humans. Use caution!'
+            },
+            ko: {
+                title: '주파수 생성기',
+                subtitle: '시작할 언어를 선택하세요:',
+                selectTarget: '대상 선택:',
+                selectFrequency: '주파수 선택:',
+                playButton: '주파수 재생',
+                stopButton: '주파수 정지',
+                warningText: '⚠️ 높은 주파수는 인간에게 해롭거나 자극적일 수 있습니다. 주의하세요!'
+            }
+        };
+
+        function updateLanguage() {
+            const lang = languageSelect.value;
+            document.getElementById('selectLanguageTitle').innerText = translations[lang].title;
+            document.getElementById('selectLanguageSubtitle').innerText = translations[lang].subtitle;
+            document.getElementById('languageLabel').innerText = lang === 'en' ? 'Select Language:' : '언어 선택:';
+            document.getElementById('mainTitle').innerText = translations[lang].title;
+            document.getElementById('targetLabel').innerText = translations[lang].selectTarget;
+            document.getElementById('frequencyLabel').innerText = translations[lang].selectFrequency;
+            playButton.innerText = translations[lang].playButton;
+            stopButton.innerText = translations[lang].stopButton;
+            warningText.innerText = translations[lang].warningText;
+        }
+
+        function showMainContent() {
+            languageSelection.style.display = 'none';
+            mainContent.style.display = 'block';
+        }
+
+        function updateOptions() {
+            const target = targetSelect.value;
+            const frequencies = targetFrequencies[target];
+            frequencySelect.innerHTML = frequencies.map(freq => `<option value="${freq}">${freq / 1000} kHz</option>`).join('');
+            updateInfo(); // Update info after options are updated
+        }
+
+        function updateInfo() {
+            const target = targetSelect.value;
+            const frequencies = targetFrequencies[target].map(freq => `${freq / 1000} kHz`).join(', ');
+            infoDiv.innerHTML = `<strong>Target:</strong> ${target.charAt(0).toUpperCase() + target.slice(1)}<br><strong>Effective Frequencies:</strong> ${frequencies}`;
+        }
+
+        function checkForHumanUnpleasantFrequency(frequency) {
+            return humanUnpleasantFrequencies.includes(frequency);
+        }
+
+        function handleFrequencyPlay(frequency) {
+            if (targetSelect.value === 'human' && checkForHumanUnpleasantFrequency(frequency)) {
+                warningDiv.style.display = 'block';
+            } else {
+                playFrequency(frequency);
+            }
+        }
+
+        languageButton.addEventListener('click', () => {
+            updateLanguage();
+            showMainContent();
+        });
+
+        targetSelect.addEventListener('change', () => {
+            updateOptions();
+        });
+
+        playButton.addEventListener('click', () => {
+            const frequency = parseInt(frequencySelect.value);
+            handleFrequencyPlay(frequency);
+        });
+
+        stopButton.addEventListener('click', () => {
+            stopFrequency();
+        });
+
+        confirmButton.addEventListener('click', () => {
+            warningDiv.style.display = 'none';
+            const frequency = parseInt(frequencySelect.value);
+            playFrequency(frequency);
+        });
+
+        cancelButton.addEventListener('click', () => {
+            warningDiv.style.display = 'none';
+        });
+
+        function playFrequency(frequency) {
+            if (audioContext) {
+                audioContext.close();
+            }
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.connect(audioContext.destination);
+            oscillator.start();
+        }
+
+        function stopFrequency() {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator.disconnect();
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+        }
+
+        // Initialize
+        updateOptions();
+    </script>
+</body>
+</html>
