@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frequency Generator</title>
     <style>
+        /* 기존 스타일 유지 */
         body {
             font-family: 'Arial', sans-serif;
             display: flex;
@@ -112,6 +113,14 @@
             padding: 10px 0;
             box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
         }
+        .age-input-section {
+            display: none;
+            margin: 20px 0;
+        }
+        .age-input-section input {
+            width: calc(100% - 24px);
+            margin: 10px auto;
+        }
     </style>
 </head>
 <body>
@@ -130,7 +139,7 @@
 
     <div class="container main-content" id="mainContent">
         <h1 id="mainTitle">Frequency Generator</h1>
-        
+
         <label for="target">Select Target:</label>
         <select id="target">
             <option value="fly">Fly</option>
@@ -139,6 +148,11 @@
             <option value="human">Human</option>
         </select>
 
+        <div class="age-input-section" id="ageSection">
+            <label for="age">Enter Your Age:</label>
+            <input type="number" id="age" min="1" max="100">
+        </div>
+
         <label for="frequency">Select Frequency:</label>
         <select id="frequency">
             <!-- Default frequencies will be updated based on selected target -->
@@ -146,8 +160,11 @@
 
         <button id="playButton">Play Frequency</button>
         <button id="stopButton">Stop Frequency</button>
-        
+
         <div class="info" id="info"></div>
+        <div class="warning" id="warning">
+            <p>⚠️ High frequencies may be harmful or irritating to humans. Use caution!</p>
+        </div>
     </div>
 
     <!-- Ad Container -->
@@ -169,7 +186,10 @@
         const playButton = document.getElementById('playButton');
         const stopButton = document.getElementById('stopButton');
         const infoDiv = document.getElementById('info');
-        
+        const ageSection = document.getElementById('ageSection');
+        const ageInput = document.getElementById('age');
+        const warningDiv = document.getElementById('warning');
+
         let audioContext;
         let oscillator;
 
@@ -181,8 +201,16 @@
             human: [15000, 20000, 25000] // Human-specific frequencies
         };
 
-        // Frequencies that may be irritating or harmful to humans
-        const humanUnpleasantFrequencies = [15000, 20000, 25000];
+        // Frequencies that may be irritating or harmful to humans by age range
+        const ageFrequencyThresholds = {
+            '1-10': [10000, 15000, 20000],
+            '11-20': [15000, 20000, 25000],
+            '21-30': [20000, 25000, 30000],
+            '31-40': [25000, 30000, 35000],
+            '41-50': [30000, 35000, 40000],
+            '51-60': [35000, 40000, 45000],
+            '61-100': [40000, 45000, 50000]
+        };
 
         // Language translations
         const translations = {
@@ -214,6 +242,7 @@
             playButton.innerText = translations[lang].playButton;
             stopButton.innerText = translations[lang].stopButton;
             document.getElementById('introText').innerText = translations[lang].introText;
+            warningDiv.querySelector('p').innerText = translations[lang].warningText;
         }
 
         function showMainContent() {
@@ -221,9 +250,28 @@
             mainContent.style.display = 'block';
         }
 
+        function getAgeRange(age) {
+            if (age >= 1 && age <= 10) return '1-10';
+            if (age >= 11 && age <= 20) return '11-20';
+            if (age >= 21 && age <= 30) return '21-30';
+            if (age >= 31 && age <= 40) return '31-40';
+            if (age >= 41 && age <= 50) return '41-50';
+            if (age >= 51 && age <= 60) return '51-60';
+            return '61-100';
+        }
+
         function updateOptions() {
             const target = targetSelect.value;
-            const frequencies = targetFrequencies[target];
+            let frequencies = targetFrequencies[target];
+
+            if (target === 'human') {
+                const age = parseInt(ageInput.value);
+                if (!isNaN(age) && age >= 1 && age <= 100) {
+                    const ageRange = getAgeRange(age);
+                    frequencies = frequencies.filter(freq => ageFrequencyThresholds[ageRange].includes(freq));
+                }
+            }
+
             frequencySelect.innerHTML = frequencies.map(freq => `<option value="${freq}">${freq / 1000} kHz</option>`).join('');
             updateInfo(); // Update info after options are updated
         }
@@ -235,7 +283,12 @@
         }
 
         function checkForHumanUnpleasantFrequency(frequency) {
-            return humanUnpleasantFrequencies.includes(frequency);
+            const age = parseInt(ageInput.value);
+            if (!isNaN(age) && age >= 1 && age <= 100) {
+                const ageRange = getAgeRange(age);
+                return ageFrequencyThresholds[ageRange].includes(frequency);
+            }
+            return false;
         }
 
         languageButton.addEventListener('click', () => {
@@ -244,7 +297,18 @@
         });
 
         targetSelect.addEventListener('change', () => {
+            if (targetSelect.value === 'human') {
+                ageSection.style.display = 'block';
+            } else {
+                ageSection.style.display = 'none';
+            }
             updateOptions();
+        });
+
+        ageInput.addEventListener('input', () => {
+            if (targetSelect.value === 'human') {
+                updateOptions();
+            }
         });
 
         playButton.addEventListener('click', () => {
