@@ -6,7 +6,7 @@
     <title>Frequency Generator</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -88,18 +88,32 @@
         .language-selection {
             display: block;
         }
-        .warning {
+        .modal {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
-        .warning p {
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+        }
+        .modal-content p {
             font-size: 16px;
             color: #f44336;
         }
-        .warning button {
-            background-color: #f44336;
-        }
-        .warning button:hover {
-            background-color: #d32f2f;
+        .modal-content button {
+            margin-top: 20px;
         }
         .ad-container {
             position: fixed;
@@ -138,6 +152,11 @@
             <option value="human">Human</option>
         </select>
 
+        <div class="age-input-section" id="ageSection">
+            <label for="age">Enter Your Age:</label>
+            <input type="number" id="age" min="1" max="100" placeholder="Enter age" />
+        </div>
+
         <label for="frequency">Select Frequency:</label>
         <select id="frequency">
             <!-- Frequencies will be populated based on selected target -->
@@ -147,7 +166,11 @@
         <button id="stopButton">Stop Frequency</button>
 
         <div class="info" id="info"></div>
-        <div class="warning" id="warning">
+    </div>
+
+    <!-- Warning Modal -->
+    <div class="modal" id="warningModal">
+        <div class="modal-content">
             <p>⚠️ High frequencies may be harmful or irritating to humans. Use caution!</p>
             <button id="confirmButton">Continue</button>
         </div>
@@ -172,18 +195,21 @@
         const playButton = document.getElementById('playButton');
         const stopButton = document.getElementById('stopButton');
         const infoDiv = document.getElementById('info');
-        const warningDiv = document.getElementById('warning');
+        const ageSection = document.getElementById('ageSection');
+        const ageInput = document.getElementById('age');
+        const warningModal = document.getElementById('warningModal');
         const confirmButton = document.getElementById('confirmButton');
 
         let audioContext;
         let oscillator;
+        let selectedFrequency;
 
         // Frequencies for different targets
         const targetFrequencies = {
             fly: [20000, 25000, 30000],
             mosquito: [25000, 30000, 35000],
             rat: [30000, 35000, 40000],
-            human: [10000, 12000, 14000, 15000] // Frequencies for humans, 10kHz to 15kHz
+            human: [] // Frequencies will be dynamically generated for humans
         };
 
         function updateLanguage() {
@@ -215,74 +241,74 @@
             playButton.innerText = translation.playButton;
             stopButton.innerText = translation.stopButton;
             document.getElementById('introText').innerText = translation.introText;
-            warningDiv.querySelector('p').innerText = translation.warningText;
+            document.querySelector('.modal-content p').innerText = translation.warningText;
         }
 
         function showMainContent() {
             languageSelection.style.display = 'none';
             mainContent.style.display = 'block';
-        }
-
-        function updateOptions() {
-            const target = targetSelect.value;
-            let frequencies = targetFrequencies[target];
-
-            if (target === 'human') {
-                // For human, show frequencies in range 10kHz to 15kHz
-                frequencies = targetFrequencies['human'];
-            }
-
-            frequencySelect.innerHTML = frequencies.map(freq => `<option value="${freq}">${freq / 1000} kHz</option>`).join('');
-            updateInfo(); // Update info after options are updated
-        }
-
-        function updateInfo() {
-            const target = targetSelect.value;
-            const frequencies = targetFrequencies[target].map(freq => `${freq / 1000} kHz`).join(', ');
-            infoDiv.innerHTML = `<strong>Target:</strong> ${target.charAt(0).toUpperCase() + target.slice(1)}<br><strong>Effective Frequencies:</strong> ${frequencies}`;
-        }
-
-        function checkForHumanUnpleasantFrequency(frequency) {
-            // For human, just check if frequency is within the range, no need for age-based checks
-            return frequency < 10000 || frequency > 15000;
-        }
-
-        languageButton.addEventListener('click', () => {
             updateLanguage();
-            showMainContent();
-        });
+        }
 
-        targetSelect.addEventListener('change', () => {
-            updateOptions();
-        });
+        function populateFrequencyOptions(frequencies) {
+            frequencySelect.innerHTML = '';
+            frequencies.forEach(frequency => {
+                const option = document.createElement('option');
+                option.value = frequency;
+                option.textContent = `${frequency} Hz`;
+                frequencySelect.appendChild(option);
+            });
+        }
 
-        playButton.addEventListener('click', () => {
-            const frequency = parseInt(frequencySelect.value);
-            if (targetSelect.value === 'human' && checkForHumanUnpleasantFrequency(frequency)) {
-                warningDiv.style.display = 'block';
+        function handleTargetChange() {
+            const target = targetSelect.value;
+            if (target === 'human') {
+                ageSection.style.display = 'block';
+                ageInput.value = '';
+                frequencySelect.innerHTML = '';
+                infoDiv.innerHTML = 'Please enter your age to get a suitable frequency range.';
             } else {
-                playFrequency(frequency);
+                ageSection.style.display = 'none';
+                populateFrequencyOptions(targetFrequencies[target]);
+                infoDiv.innerHTML = '';
             }
-        });
+        }
 
-        confirmButton.addEventListener('click', () => {
-            const frequency = parseInt(frequencySelect.value);
-            playFrequency(frequency);
-            warningDiv.style.display = 'none';
-        });
+        function handlePlayButtonClick() {
+            const target = targetSelect.value;
+            if (target === 'human') {
+                const age = parseInt(ageInput.value, 10);
+                if (isNaN(age)) {
+                    infoDiv.innerHTML = 'Please enter a valid age.';
+                    return;
+                }
+                if (age >= 1 && age <= 29) {
+                    populateFrequencyOptions([...Array.from({ length: 8 }, (_, i) => 10000 + i * 1000)]);
+                } else if (age >= 30 && age <= 39) {
+                    populateFrequencyOptions([...Array.from({ length: 8 }, (_, i) => 9000 + i * 1000)]);
+                } else if (age >= 40 && age <= 49) {
+                    populateFrequencyOptions([...Array.from({ length: 8 }, (_, i) => 8000 + i * 1000)]);
+                } else if (age >= 50) {
+                    populateFrequencyOptions([...Array.from({ length: 6 }, (_, i) => 5000 + i * 1000)]);
+                } else {
+                    infoDiv.innerHTML = 'Age must be between 1 and 100.';
+                    return;
+                }
+                warningModal.style.display = 'flex';
+            } else {
+                selectedFrequency = parseInt(frequencySelect.value, 10);
+                playFrequency();
+            }
+        }
 
-        stopButton.addEventListener('click', () => {
-            stopFrequency();
-        });
-
-        function playFrequency(frequency) {
+        function playFrequency() {
             if (audioContext) {
                 audioContext.close();
             }
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
             oscillator = audioContext.createOscillator();
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(selectedFrequency, audioContext.currentTime);
             oscillator.connect(audioContext.destination);
             oscillator.start();
         }
@@ -291,14 +317,20 @@
             if (oscillator) {
                 oscillator.stop();
                 oscillator.disconnect();
-            }
-            if (audioContext) {
-                audioContext.close();
+                oscillator = null;
             }
         }
 
-        // Initialize
-        updateOptions();
+        languageButton.addEventListener('click', showMainContent);
+        targetSelect.addEventListener('change', handleTargetChange);
+        playButton.addEventListener('click', handlePlayButtonClick);
+        stopButton.addEventListener('click', stopFrequency);
+        confirmButton.addEventListener('click', () => {
+            warningModal.style.display = 'none';
+            selectedFrequency = parseInt(frequencySelect.value, 10);
+            playFrequency();
+        });
+
     </script>
 </body>
 </html>
