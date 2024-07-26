@@ -15,6 +15,11 @@
             margin: 0;
             background: linear-gradient(to right, #ff7e5f, #feb47b);
         }
+        .ad-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
         .container {
             background: #ffffff;
             padding: 20px;
@@ -104,6 +109,15 @@
     </style>
 </head>
 <body>
+    <!-- 카카오 에드핏 광고 -->
+    <div class="ad-container">
+        <ins class="kakao_ad_area" style="display:block; text-align:center;"
+            data-ad-unit="DAN-DDNCplMPGYeG5XN9"
+            data-ad-width="728"
+            data-ad-height="90"></ins>
+        <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
+    </div>
+
     <div class="container language-selection" id="languageSelection">
         <h1 id="selectLanguageTitle">Frequency Generator</h1>
         <h2 id="selectLanguageSubtitle">Choose your language to start:</h2>
@@ -222,48 +236,8 @@
         function updateInfo() {
             const target = targetSelect.value;
             const frequencies = targetFrequencies[target].map(freq => `${freq / 1000} kHz`).join(', ');
-            infoDiv.innerHTML = `<strong>Target:</strong> ${target.charAt(0).toUpperCase() + target.slice(1)}<br><strong>Effective Frequencies:</strong> ${frequencies}`;
+            infoDiv.innerHTML = `Available frequencies for ${target}: ${frequencies}`;
         }
-
-        function checkForHumanUnpleasantFrequency(frequency) {
-            return humanUnpleasantFrequencies.includes(frequency);
-        }
-
-        function handleFrequencyPlay(frequency) {
-            if (targetSelect.value === 'human' && checkForHumanUnpleasantFrequency(frequency)) {
-                warningDiv.style.display = 'block';
-            } else {
-                playFrequency(frequency);
-            }
-        }
-
-        languageButton.addEventListener('click', () => {
-            updateLanguage();
-            showMainContent();
-        });
-
-        targetSelect.addEventListener('change', () => {
-            updateOptions();
-        });
-
-        playButton.addEventListener('click', () => {
-            const frequency = parseInt(frequencySelect.value);
-            handleFrequencyPlay(frequency);
-        });
-
-        stopButton.addEventListener('click', () => {
-            stopFrequency();
-        });
-
-        confirmButton.addEventListener('click', () => {
-            warningDiv.style.display = 'none';
-            const frequency = parseInt(frequencySelect.value);
-            playFrequency(frequency);
-        });
-
-        cancelButton.addEventListener('click', () => {
-            warningDiv.style.display = 'none';
-        });
 
         function playFrequency(frequency) {
             if (audioContext) {
@@ -282,13 +256,35 @@
                 oscillator.stop();
                 oscillator.disconnect();
             }
-            if (audioContext) {
-                audioContext.close();
-            }
         }
 
-        // Initialize
-        updateOptions();
+        languageButton.addEventListener('click', () => {
+            updateLanguage();
+            showMainContent();
+        });
+
+        targetSelect.addEventListener('change', updateOptions);
+
+        playButton.addEventListener('click', () => {
+            const frequency = parseInt(frequencySelect.value);
+            if (humanUnpleasantFrequencies.includes(frequency)) {
+                warningDiv.style.display = 'block';
+            } else {
+                playFrequency(frequency);
+            }
+        });
+
+        stopButton.addEventListener('click', stopFrequency);
+
+        confirmButton.addEventListener('click', () => {
+            warningDiv.style.display = 'none';
+            const frequency = parseInt(frequencySelect.value);
+            playFrequency(frequency);
+        });
+
+        cancelButton.addEventListener('click', () => {
+            warningDiv.style.display = 'none';
+        });
     </script>
 </body>
 </html>
