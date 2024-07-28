@@ -129,11 +129,11 @@
 </head>
 <body>
     <div class="container language-selection" id="languageSelection">
-        <h1 id="selectionTitle">Welcome to the Frequency Generator</h1>
+        <h1 id="selectionTitle">Frequency Generator</h1>
         <p class="intro" id="introText">
-            Select your preferred language to continue. This tool allows you to generate different frequencies for various targets.
+            Please select a language to continue. This tool generates frequencies for different targets.
         </p>
-        <label for="language">Choose Language:</label>
+        <label for="language">Select Language:</label>
         <select id="language">
             <option value="en">English</option>
             <option value="ko">한국어</option>
@@ -153,8 +153,8 @@
         </select>
 
         <div class="age-input-section" id="ageSection">
-            <label for="age">Enter Your Age:</label>
-            <input type="number" id="age" min="1" max="100" placeholder="Enter age" />
+            <label for="age">Enter Age:</label>
+            <input type="number" id="age" min="1" max="100" placeholder="Enter Age" />
         </div>
 
         <label for="frequency">Select Frequency:</label>
@@ -171,7 +171,7 @@
     <!-- Warning Modal -->
     <div class="modal" id="warningModal">
         <div class="modal-content">
-            <p>⚠️ High frequencies may be harmful or irritating to humans. Use caution!</p>
+            <p>⚠️ High frequencies can be harmful or irritating to humans. Use caution!</p>
             <button id="confirmButton">Continue</button>
         </div>
     </div>
@@ -214,34 +214,39 @@
 
         function updateLanguage() {
             const lang = languageSelect.value;
-            const translations = {
-                en: {
-                    title: 'Frequency Generator',
-                    selectTarget: 'Select Target:',
-                    selectFrequency: 'Select Frequency:',
-                    playButton: 'Play Frequency',
-                    stopButton: 'Stop Frequency',
-                    introText: 'Choose your target and select a frequency.',
-                    warningText: '⚠️ High frequencies may be harmful or irritating to humans. Use caution!'
-                },
-                ko: {
-                    title: '주파수 생성기',
-                    selectTarget: '대상 선택:',
-                    selectFrequency: '주파수 선택:',
-                    playButton: '주파수 재생',
-                    stopButton: '주파수 정지',
-                    introText: '대상을 선택하고 주파수를 선택하세요.',
-                    warningText: '⚠️ 고주파는 사람에게 해롭거나 자극적일 수 있습니다. 주의하세요!'
-                }
-            };
-            const translation = translations[lang];
-            document.getElementById('mainTitle').innerText = translation.title;
-            targetSelect.previousElementSibling.innerText = translation.selectTarget;
-            frequencySelect.previousElementSibling.innerText = translation.selectFrequency;
-            playButton.innerText = translation.playButton;
-            stopButton.innerText = translation.stopButton;
-            document.getElementById('introText').innerText = translation.introText;
-            document.querySelector('.modal-content p').innerText = translation.warningText;
+            if (lang === 'ko') {
+                document.getElementById('mainTitle').innerText = '주파수 생성기';
+                targetSelect.previousElementSibling.innerText = '대상 선택:';
+                targetSelect.querySelector('option[value="fly"]').innerText = '파리';
+                targetSelect.querySelector('option[value="mosquito"]').innerText = '모기';
+                targetSelect.querySelector('option[value="rat"]').innerText = '쥐';
+                targetSelect.querySelector('option[value="human"]').innerText = '사람';
+                frequencySelect.previousElementSibling.innerText = '주파수 선택:';
+                playButton.innerText = '주파수 재생';
+                stopButton.innerText = '주파수 정지';
+                document.getElementById('introText').innerText = '계속하려면 언어를 선택하세요. 이 도구는 다양한 대상을 위한 다양한 주파수를 생성할 수 있습니다.';
+                document.querySelector('.modal-content p').innerText = '⚠️ 고주파는 사람에게 해롭거나 자극적일 수 있습니다. 주의하세요!';
+                languageButton.innerText = '계속';
+                document.getElementById('selectionTitle').innerText = '주파수 생성기';
+                document.querySelector('label[for="language"]').innerText = '언어 선택:';
+                document.querySelector('label[for="age"]').innerText = '나이를 입력하세요:';
+            } else {
+                document.getElementById('mainTitle').innerText = 'Frequency Generator';
+                targetSelect.previousElementSibling.innerText = 'Select Target:';
+                targetSelect.querySelector('option[value="fly"]').innerText = 'Fly';
+                targetSelect.querySelector('option[value="mosquito"]').innerText = 'Mosquito';
+                targetSelect.querySelector('option[value="rat"]').innerText = 'Rat';
+                targetSelect.querySelector('option[value="human"]').innerText = 'Human';
+                frequencySelect.previousElementSibling.innerText = 'Select Frequency:';
+                playButton.innerText = 'Play Frequency';
+                stopButton.innerText = 'Stop Frequency';
+                document.getElementById('introText').innerText = 'Please select a language to continue. This tool generates frequencies for different targets.';
+                document.querySelector('.modal-content p').innerText = '⚠️ High frequencies can be harmful or irritating to humans. Use caution!';
+                languageButton.innerText = 'Continue';
+                document.getElementById('selectionTitle').innerText = 'Frequency Generator';
+                document.querySelector('label[for="language"]').innerText = 'Select Language:';
+                document.querySelector('label[for="age"]').innerText = 'Enter Age:';
+            }
         }
 
         function showMainContent() {
@@ -266,7 +271,7 @@
                 ageSection.style.display = 'block';
                 ageInput.value = '';
                 frequencySelect.innerHTML = '';
-                infoDiv.innerHTML = 'Please enter your age to get a suitable frequency range.';
+                infoDiv.innerHTML = '나이를 입력하여 적절한 주파수 범위를 확인하세요.';
             } else {
                 ageSection.style.display = 'none';
                 populateFrequencyOptions(targetFrequencies[target]);
@@ -279,7 +284,7 @@
             if (target === 'human') {
                 const age = parseInt(ageInput.value, 10);
                 if (isNaN(age)) {
-                    infoDiv.innerHTML = 'Please enter a valid age.';
+                    infoDiv.innerHTML = '유효한 나이를 입력하세요.';
                     return;
                 }
                 if (age >= 1 && age <= 29) {
@@ -291,13 +296,14 @@
                 } else if (age >= 50) {
                     populateFrequencyOptions([...Array.from({ length: 6 }, (_, i) => 5000 + i * 1000)]);
                 } else {
-                    infoDiv.innerHTML = 'Age must be between 1 and 100.';
+                    infoDiv.innerHTML = '나이는 1에서 100 사이여야 합니다.';
                     return;
                 }
+                selectedFrequency = parseInt(frequencySelect.value, 10);
                 warningModal.style.display = 'flex';
             } else {
                 selectedFrequency = parseInt(frequencySelect.value, 10);
-                playFrequency();
+                warningModal.style.display = 'flex';
             }
         }
 
@@ -322,12 +328,12 @@
         }
 
         languageButton.addEventListener('click', showMainContent);
+        languageSelect.addEventListener('change', updateLanguage);
         targetSelect.addEventListener('change', handleTargetChange);
         playButton.addEventListener('click', handlePlayButtonClick);
         stopButton.addEventListener('click', stopFrequency);
         confirmButton.addEventListener('click', () => {
             warningModal.style.display = 'none';
-            selectedFrequency = parseInt(frequencySelect.value, 10);
             playFrequency();
         });
     </script>
