@@ -287,19 +287,16 @@
                     infoDiv.innerHTML = '유효한 나이를 입력하세요.';
                     return;
                 }
-                if (age >= 1 && age <= 29) {
-                    populateFrequencyOptions([...Array.from({ length: 8 }, (_, i) => 10000 + i * 1000)]);
-                } else if (age >= 30 && age <= 39) {
-                    populateFrequencyOptions([...Array.from({ length: 8 }, (_, i) => 9000 + i * 1000)]);
-                } else if (age >= 40 && age <= 49) {
-                    populateFrequencyOptions([...Array.from({ length: 8 }, (_, i) => 8000 + i * 1000)]);
-                } else if (age >= 50) {
-                    populateFrequencyOptions([...Array.from({ length: 6 }, (_, i) => 5000 + i * 1000)]);
+                let baseFrequency = 5000;
+                if (age > 20) {
+                    selectedFrequency = baseFrequency - (age - 20) * 9;
+                } else if (age < 20) {
+                    selectedFrequency = baseFrequency + (20 - age) * 4;
                 } else {
-                    infoDiv.innerHTML = '나이는 1에서 100 사이여야 합니다.';
-                    return;
+                    selectedFrequency = baseFrequency;
                 }
-                selectedFrequency = parseInt(frequencySelect.value, 10);
+
+                frequencySelect.innerHTML = `<option value="${selectedFrequency}">${selectedFrequency} Hz</option>`;
                 warningModal.style.display = 'flex';
             } else {
                 selectedFrequency = parseInt(frequencySelect.value, 10);
